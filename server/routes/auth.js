@@ -8,7 +8,7 @@ import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
-// ✅ Email transporter - Port 587 (works on Render)
+
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
