@@ -32,4 +32,4 @@ logs/
 
 # MongoDB local data
 data/
-dump/
+dump/.env

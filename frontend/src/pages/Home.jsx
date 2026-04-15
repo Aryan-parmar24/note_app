@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import React from 'react'
 import Navbar from '../components/Navbar'
 import { useState } from 'react'
@@ -31,7 +32,7 @@ const Home = () => {
 
     const fetchNotes = async () => {
         try {
-            const { data } = await axios.get("http://localhost:5050/api/note", {
+            const { data } = await axios.get(`${API_URL}/api/note`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
@@ -61,7 +62,7 @@ const Home = () => {
     const addNote = async (title, description) => {
         try {
             const response = await
-                axios.post('http://localhost:5050/api/note/add',
+                axios.post(`${API_URL}/api/note/add`,
                     { title, description }, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -81,7 +82,7 @@ const Home = () => {
     const deleteNote = async (id) => {
         try {
             const response = await
-                axios.delete(`http://localhost:5050/api/note/${id}`,
+                axios.delete(`${API_URL}/api/note/${id}`,
                     {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -98,7 +99,7 @@ const Home = () => {
     const editNote = async (id, title, description) => {
         try {
             const response = await
-                axios.put(`http://localhost:5050/api/note/${id}`,
+                axios.put(`${API_URL}/api/note/${id}`,
                     { title, description }, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`

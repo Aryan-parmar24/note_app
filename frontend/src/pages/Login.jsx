@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/ContextProvider';
+import { API_URL } from '../config';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -12,12 +13,13 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5050/api/auth/login', {
+            const response = await axios.post(`${API_URL}/api/auth/login`, {
                 email,
                 password
             });
             
-            // If successful (status 200)
+            console.log("Login response:", response.data);
+            
             if (response.data.success) {
                 const userData = {
                     name: response.data.user.name,
@@ -26,16 +28,12 @@ const Login = () => {
                 };
                 login(userData, response.data.token);
                 navigate("/");
+            } else {
+                alert(response.data.message || "Login failed. Please check your credentials.");
             }
         } catch (error) {
-            if (error.response) {
-                console.log("Error response:", error.response.data);
-                alert(error.response.data?.message || "Invalid email or password");
-            } else if (error.request) {
-                alert("Cannot connect to server. Please check if backend is running.");
-            } else {
-                alert("An error occurred. Please try again.");
-            }
+            console.log(error);
+            alert(error.response?.data?.message || "Login failed");
         }
     }
     
@@ -49,7 +47,6 @@ const Login = () => {
                         <input
                             className='w-full px-3 py-2 border'
                             type='email'
-                            value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder='Enter email' required />
                     </div>
@@ -59,7 +56,6 @@ const Login = () => {
                         <input
                             className='w-full px-3 py-2 border'
                             type='password'
-                            value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder='Enter password' required />
                     </div>
