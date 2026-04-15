@@ -17,10 +17,10 @@ jobs:
       with:
         node-version: '22'
     
-    - name: Setup Java 17
+    - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        distribution: 'zulu'
+        distribution: 'temurin'
         java-version: '17'
     
     - name: Setup Android SDK
@@ -43,16 +43,11 @@ jobs:
         npx cap add android
         npx cap sync
     
-    - name: Set Java 17 for Gradle
-      working-directory: ./frontend/android
-      run: |
-        echo "org.gradle.java.home=/opt/hostedtoolcache/Java_Zulu_17.0.17_17_x64/17.0.17-17/x64" >> gradle.properties
-    
     - name: Build APK
       working-directory: ./frontend/android
       run: |
         chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon
+        ./gradlew assembleDebug --no-daemon -Dorg.gradle.java.home=$JAVA_HOME_17_X64
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
