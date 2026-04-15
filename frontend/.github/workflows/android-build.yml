@@ -32,7 +32,6 @@ jobs:
         cd frontend
         npm install
     
-    # ✅ IMPORTANT: Install Capacitor BEFORE building
     - name: Install Capacitor
       run: |
         cd frontend
@@ -43,24 +42,6 @@ jobs:
         cd frontend
         npm run build
     
-    # ✅ Check what build folder is created (dist or build)
-    - name: Check build output
-      run: |
-        cd frontend
-        echo "=== Checking build folder ==="
-        ls -la
-        if [ -d "dist" ]; then
-          echo "Found 'dist' folder"
-          ls -la dist/
-        elif [ -d "build" ]; then
-          echo "Found 'build' folder"
-          ls -la build/
-        else
-          echo "ERROR: No build folder found!"
-          exit 1
-        fi
-    
-    # ✅ Create Capacitor config properly
     - name: Create Capacitor Config
       run: |
         cd frontend
@@ -79,11 +60,7 @@ jobs:
         }
         EOF
     
-    # ⚠️ IMPORTANT: Change "dist" to "build" if you use Create React App
-    # Vite → uses "dist"
-    # Create React App → uses "build"
-    
-    - name: Add Android platform
+    - name: Add Android Platform
       run: |
         cd frontend
         npx cap add android
@@ -95,7 +72,7 @@ jobs:
         chmod +x gradlew
         ./gradlew assembleDebug
     
-    - name: Upload APK artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: note-app-apk
