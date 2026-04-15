@@ -7,6 +7,11 @@ import connectToMongoDB from './config/db.js';
 
 const app = express();
 
+const allowedOrigins = [
+    'http://localhost:5173',           // Local development
+    'https://note-app-frontend.vercel.app'  // Your Vercel URL
+];
+
 app.use(cors({
     origin: '*',  // For mobile app, allow all origins
     credentials: true
