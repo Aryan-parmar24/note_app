@@ -1,12 +1,12 @@
-import mongoose  from "mongoose";
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
-    name:{
+    name: {
         type: String,
         required: true
     },
 
-    email:{
+    email: {
         type: String,
         unique: true,
         required: true
@@ -16,7 +16,17 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+
+    resetOTP: {
+        type: String,
+        default: null
+    },
+
+    resetOTPExpiry: {
+        type: Date,
+        default: null
+    }
 });
 
-const User = mongoose.model('User',UserSchema);
+const User = mongoose.model('User', UserSchema);
 export default User;

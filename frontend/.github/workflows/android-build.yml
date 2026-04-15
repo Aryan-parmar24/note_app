@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
@@ -16,13 +18,13 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
     
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
     
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
@@ -51,7 +53,7 @@ jobs:
           "appName": "Note App",
           "webDir": "dist",
           "server": {
-            "url": "https://note-app-backend-kp7x.onrender.com",
+            "url": "https://note-app-orcin-beta.vercel.app",
             "cleartext": true
           },
           "android": {
@@ -60,9 +62,10 @@ jobs:
         }
         EOF
     
-    - name: Add Android Platform
+    - name: Setup Android Platform
       run: |
         cd frontend
+        rm -rf android
         npx cap add android
         npx cap sync
     
@@ -72,8 +75,22 @@ jobs:
         chmod +x gradlew
         ./gradlew assembleDebug
     
-    - name: Upload APK
+    - name: Rename APK
+      run: |
+        cp frontend/android/app/build/outputs/apk/debug/app-debug.apk ./NoteApp.apk
+    
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: note-app-apk
-        path: frontend/android/app/build/outputs/apk/debug/*.apk
+        path: ./NoteApp.apk
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v1.0.${{ github.run_number }}
+        name: Note App v1.0.${{ github.run_number }}
+        body: |
+          📱 Note App Android APK
+          Download NoteApp.apk and install on your phone!
+        files: ./NoteApp.apk
