@@ -20,16 +20,11 @@ jobs:
     - name: Setup Java 17
       uses: actions/setup-java@v4
       with:
-        distribution: 'temurin'
+        distribution: 'zulu'
         java-version: '17'
     
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-    
-    - name: Set JAVA_HOME
-      run: |
-        echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
-        echo "JAVA_HOME_17=$JAVA_HOME_17_X64" >> $GITHUB_ENV
     
     - name: Install dependencies
       working-directory: ./frontend
@@ -48,24 +43,27 @@ jobs:
         npx cap add android
         npx cap sync
     
-    - name: Fix Java version in Gradle
+    - name: Fix Gradle for Java 17
       working-directory: ./frontend/android
       run: |
-        # Force Java 17 in gradle.properties
-        echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
-        echo "org.gradle.java.home=$JAVA_HOME_17_X64" >> gradle.properties
+        # Update gradle version to work with Java 17
+        sed -i 's/classpath "com.android.tools.build:gradle:.*/classpath "com.android.tools.build:gradle:7.4.2"/' app/build.gradle
         
-        # Fix source compatibility in app build.gradle
-        sed -i 's/sourceCompatibility = .*/sourceCompatibility = JavaVersion.VERSION_17/' app/build.gradle
-        sed -i 's/targetCompatibility = .*/targetCompatibility = JavaVersion.VERSION_17/' app/build.gradle
-        sed -i 's/compileOptions.sourceCompatibility .*/compileOptions.sourceCompatibility JavaVersion.VERSION_17/' app/build.gradle
-        sed -i 's/compileOptions.targetCompatibility .*/compileOptions.targetCompatibility JavaVersion.VERSION_17/' app/build.gradle
+        # Set Java compatibility
+        cat >> app/build.gradle << 'EOF'
+android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+EOF
     
     - name: Build APK
       working-directory: ./frontend/android
       run: |
         chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon -Dorg.gradle.java.home=$JAVA_HOME_17_X64
+        ./gradlew assembleDebug --no-daemon
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
