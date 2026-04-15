@@ -51,6 +51,26 @@ const Login = () => {
     };
 
     // Step 1: Send OTP to email
+    // const handleSendOTP = async (e) => {
+    //     e.preventDefault();
+    //     setForgotLoading(true);
+    //     setMessage('');
+    //     try {
+    //         const response = await axios.post(`${API_URL}/api/auth/forgot-password`, {
+    //             email: forgotEmail
+    //         });
+    //         if (response.data.success) {
+    //             setMessage('✅ OTP sent to your email!');
+    //             setForgotStep(2);
+    //         } else {
+    //             setMessage('❌ ' + response.data.message);
+    //         }
+    //     } catch (error) {
+    //         setMessage('❌ ' + (error.response?.data?.message || 'Failed to send OTP'));
+    //     } finally {
+    //         setForgotLoading(false);
+    //     }
+    // };
     const handleSendOTP = async (e) => {
         e.preventDefault();
         setForgotLoading(true);
