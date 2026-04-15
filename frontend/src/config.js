@@ -8,7 +8,7 @@ if (import.meta.env.DEV) {
     API_URL = 'http://localhost:5050';
 } else {
     // Production (Vercel or mobile app)
-    API_URL = import.meta.env.VITE_API_URL || 'https://your-backend-url.onrender.com';
+    API_URL = import.meta.env.VITE_API_URL || 'https://note-app-backend-kp7x.onrender.com';
 }
 
 // Detect if running as mobile app
