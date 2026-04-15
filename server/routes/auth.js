@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import middleware from '../middleware/middleware.js';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -115,6 +116,7 @@ router.post('/forgot-password', async (req, res) => {
         const { email } = req.body;
 
         console.log("=== FORGOT PASSWORD ===");
+        console.log("Email:", email);
 
         const user = await User.findOne({ email });
 
@@ -125,6 +127,14 @@ router.post('/forgot-password', async (req, res) => {
             });
         }
 
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.log("Email vars not set!");
+            return res.status(200).json({
+                success: false,
+                message: "Email service not configured"
+            });
+        }
+
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -132,18 +142,48 @@ router.post('/forgot-password', async (req, res) => {
         user.resetOTPExpiry = otpExpiry;
         await user.save();
 
-        console.log("OTP generated for:", email);
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Note App - Password Reset OTP',
+            html: `
+                <div style="font-family: Arial; max-width: 500px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #0d9488; text-align: center;">Note App</h2>
+                    <p>Hello <strong>${user.name}</strong>,</p>
+                    <p>Your OTP is:</p>
+                    <div style="background: #f0fdfa; border: 2px solid #0d9488; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
+                        <h1 style="color: #0d9488; letter-spacing: 8px;">${otp}</h1>
+                    </div>
+                    <p>Valid for 10 minutes.</p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log("Email sent!");
 
         return res.status(200).json({
             success: true,
-            message: "OTP generated successfully",
-            otp: otp
+            message: "OTP sent to your email"
         });
     } catch (error) {
         console.log("Forgot password error:", error.message);
         return res.status(200).json({
             success: false,
-            message: "Failed to generate OTP"
+            message: "Failed to send OTP: " + error.message
         });
     }
 });
