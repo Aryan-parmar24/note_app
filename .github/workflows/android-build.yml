@@ -60,9 +60,10 @@ jobs:
         }
         EOF
     
-    - name: Add Android Platform
+    - name: Setup Android Platform
       run: |
         cd frontend
+        rm -rf android
         npx cap add android
         npx cap sync
     
