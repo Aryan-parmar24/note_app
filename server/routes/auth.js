@@ -8,12 +8,17 @@ import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
-// Email transporter setup
+// ✅ Email transporter - Port 587 (works on Render)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
@@ -128,6 +133,12 @@ router.get('/verify', middleware, async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
+
+        console.log("=== FORGOT PASSWORD REQUEST ===");
+        console.log("Email:", email);
+        console.log("EMAIL_USER:", process.env.EMAIL_USER ? "SET" : "NOT SET");
+        console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "SET" : "NOT SET");
+
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -137,16 +148,23 @@ router.post('/forgot-password', async (req, res) => {
             });
         }
 
-        // Generate OTP
-        const otp = generateOTP();
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.log("ERROR: Email environment variables not set!");
+            return res.status(500).json({
+                success: false,
+                message: "Email service not configured"
+            });
+        }
 
-        // Save OTP to user
+        const otp = generateOTP();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
         user.resetOTP = otp;
         user.resetOTPExpiry = otpExpiry;
         await user.save();
 
-        // Send email
+        console.log("OTP saved, sending email...");
+
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -162,13 +180,12 @@ router.post('/forgot-password', async (req, res) => {
                     </div>
                     <p style="color: #666;">This OTP is valid for <strong>10 minutes</strong>.</p>
                     <p style="color: #666;">If you didn't request this, please ignore this email.</p>
-                    <hr style="border: 1px solid #eee; margin: 20px 0;">
-                    <p style="color: #999; font-size: 12px; text-align: center;">Note App © 2025</p>
                 </div>
             `
         };
 
         await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully!");
 
         return res.status(200).json({
             success: true,
@@ -260,10 +277,8 @@ router.post('/reset-password', async (req, res) => {
             });
         }
 
-        // Hash new password
         const hashPassword = await bcrypt.hash(newPassword, 10);
 
-        // Update password and clear OTP
         user.password = hashPassword;
         user.resetOTP = null;
         user.resetOTPExpiry = null;
