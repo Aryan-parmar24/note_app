@@ -117,6 +117,7 @@ router.post('/forgot-password', async (req, res) => {
 
         console.log("=== FORGOT PASSWORD ===");
         console.log("Email:", email);
+        console.log(process.env.EMAIL_USER)
 
         const user = await User.findOne({ email });
 
