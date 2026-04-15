@@ -7,30 +7,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v3
       with:
-        node-version: '20'
+        node-version: '18'
     
-    - name: Setup Java 17
-      uses: actions/setup-java@v4
+    - name: Setup Java 11
+      uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: '17'
-    
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-    
-    - name: Remove old Capacitor
-      working-directory: ./frontend
-      run: |
-        rm -rf node_modules/@capacitor
-        rm -rf android
+        java-version: '11'
     
     - name: Install dependencies
       working-directory: ./frontend
@@ -40,12 +31,12 @@ jobs:
       working-directory: ./frontend
       run: npm run build
     
-    - name: Install Capacitor 6 (Works with Java 17)
+    - name: Install Capacitor 5 (Most Stable)
       working-directory: ./frontend
       run: |
-        npm install @capacitor/core@6.0.0
-        npm install @capacitor/cli@6.0.0
-        npm install @capacitor/android@6.0.0
+        npm install @capacitor/core@5.7.0
+        npm install @capacitor/cli@5.7.0
+        npm install @capacitor/android@5.7.0
         npx cap init "Note App" "com.yourname.noteapp" --web-dir=dist
         npx cap add android
         npx cap sync
@@ -57,7 +48,7 @@ jobs:
         ./gradlew assembleDebug --no-daemon
     
     - name: Upload APK
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: note-app-apk
         path: frontend/android/app/build/outputs/apk/debug/*.apk
