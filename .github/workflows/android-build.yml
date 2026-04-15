@@ -27,28 +27,27 @@ jobs:
       uses: android-actions/setup-android@v3
     
     - name: Install dependencies
-      run: |
-        cd frontend
-        npm install
+      working-directory: ./frontend
+      run: npm install
     
     - name: Build web app
-      run: |
-        cd frontend
-        npm run build
+      working-directory: ./frontend
+      run: npm run build
     
-    - name: Setup Capacitor
+    - name: Install Capacitor
+      working-directory: ./frontend
       run: |
-        cd frontend
         npm install @capacitor/core @capacitor/cli @capacitor/android
         npx cap init "Note App" "com.yourname.noteapp" --web-dir=dist
+        rm -rf android 2>/dev/null || true
         npx cap add android
         npx cap sync
     
     - name: Build APK
+      working-directory: ./frontend/android
       run: |
-        cd frontend/android
         chmod +x gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --no-daemon
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
