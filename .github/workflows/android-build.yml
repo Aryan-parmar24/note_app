@@ -52,10 +52,6 @@ jobs:
           "appId": "com.noteapp.app",
           "appName": "Note App",
           "webDir": "dist",
-          "server": {
-            "url": "https://note-app-backend-kp7x.onrender.com",
-            "cleartext": true
-          },
           "android": {
             "allowMixedContent": true
           }
