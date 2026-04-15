@@ -1,0 +1,9 @@
+### steps in terminal after react project creation
+
+cd frontend
+
+npm install -D tailwindcss@3 postcss autoprefixer
+
+npx tailwindcss init -p
+
+npm i react-toastify axios react-icons react-router-dom
