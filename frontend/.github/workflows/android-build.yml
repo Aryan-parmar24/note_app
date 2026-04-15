@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -31,26 +32,70 @@ jobs:
         cd frontend
         npm install
     
+    # ✅ IMPORTANT: Install Capacitor BEFORE building
+    - name: Install Capacitor
+      run: |
+        cd frontend
+        npm install @capacitor/core @capacitor/cli @capacitor/android
+    
     - name: Build web app
       run: |
         cd frontend
         npm run build
     
-    - name: Setup Capacitor
+    # ✅ Check what build folder is created (dist or build)
+    - name: Check build output
       run: |
         cd frontend
-        npm install @capacitor/core @capacitor/cli @capacitor/android
-        npx cap init "Note App" "com.yourname.noteapp" --web-dir=dist
+        echo "=== Checking build folder ==="
+        ls -la
+        if [ -d "dist" ]; then
+          echo "Found 'dist' folder"
+          ls -la dist/
+        elif [ -d "build" ]; then
+          echo "Found 'build' folder"
+          ls -la build/
+        else
+          echo "ERROR: No build folder found!"
+          exit 1
+        fi
+    
+    # ✅ Create Capacitor config properly
+    - name: Create Capacitor Config
+      run: |
+        cd frontend
+        cat > capacitor.config.json << 'EOF'
+        {
+          "appId": "com.noteapp.app",
+          "appName": "Note App",
+          "webDir": "dist",
+          "server": {
+            "url": "https://note-app-backend-kp7x.onrender.com",
+            "cleartext": true
+          },
+          "android": {
+            "allowMixedContent": true
+          }
+        }
+        EOF
+    
+    # ⚠️ IMPORTANT: Change "dist" to "build" if you use Create React App
+    # Vite → uses "dist"
+    # Create React App → uses "build"
+    
+    - name: Add Android platform
+      run: |
+        cd frontend
         npx cap add android
         npx cap sync
     
-    - name: Build APK
+    - name: Build Debug APK
       run: |
         cd frontend/android
         chmod +x gradlew
         ./gradlew assembleDebug
     
-    - name: Upload APK
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: note-app-apk
