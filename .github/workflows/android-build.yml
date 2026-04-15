@@ -15,7 +15,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '22'
+        node-version: '20'
     
     - name: Setup Java 17
       uses: actions/setup-java@v4
@@ -26,6 +26,12 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
     
+    - name: Remove old Capacitor
+      working-directory: ./frontend
+      run: |
+        rm -rf node_modules/@capacitor
+        rm -rf android
+    
     - name: Install dependencies
       working-directory: ./frontend
       run: npm install
@@ -34,14 +40,13 @@ jobs:
       working-directory: ./frontend
       run: npm run build
     
-    - name: Install Capacitor 8
+    - name: Install Capacitor 6 (Works with Java 17)
       working-directory: ./frontend
       run: |
-        npm install @capacitor/core@8.3.0
-        npm install @capacitor/cli@8.3.0
-        npm install @capacitor/android@8.3.0
+        npm install @capacitor/core@6.0.0
+        npm install @capacitor/cli@6.0.0
+        npm install @capacitor/android@6.0.0
         npx cap init "Note App" "com.yourname.noteapp" --web-dir=dist
-        rm -rf android
         npx cap add android
         npx cap sync
     
