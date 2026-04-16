@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaTimes, FaCopy, FaCheck, FaUsers, 
+import { FaTimes, FaCopy, FaCheck, FaUsers,
          FaTrash, FaLink, FaQrcode, FaShareAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
@@ -61,6 +61,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                 setShowQR(false);
                 toast.success('Sharing disabled!');
                 if (onUpdate) onUpdate();
+                closeShare();
             }
         } catch (error) {
             toast.error('Failed to disable sharing!');
@@ -69,32 +70,57 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
         }
     };
 
-    // ✅ Native Share API
+    // ✅ Works on BOTH mobile APK and web browser!
     const handleNativeShare = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: `Join my note: ${note.title}`,
-                    text: `Hey! I'm sharing a note with you on NoteApp. Click the link to join and collaborate!`,
-                    url: shareLink
-                });
-                toast.success('Shared successfully! 🎉');
-            } catch (error) {
-                if (error.name !== 'AbortError') {
-                    handleCopyLink();
+        try {
+            // Try Capacitor Share Plugin first (for APK)
+            const { Share } = await import('@capacitor/share');
+            await Share.share({
+                title: `Join my note: ${note.title}`,
+                text: `Hey! I'm sharing a note with you on NoteApp. Click the link to join and collaborate!`,
+                url: shareLink,
+                dialogTitle: 'Share Note via'
+            });
+            toast.success('Shared! 🎉');
+        } catch (capacitorError) {
+            // Fallback: Web Share API (for browser)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `Join my note: ${note.title}`,
+                        text: `Hey! I'm sharing a note with you on NoteApp!`,
+                        url: shareLink
+                    });
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        // Final fallback: Copy link
+                        handleCopyLink();
+                    }
                 }
+            } else {
+                // Browser doesn't support share → just copy
+                handleCopyLink();
             }
-        } else {
-            // Fallback for desktop browsers
-            handleCopyLink();
         }
     };
 
     const handleCopyLink = () => {
-        navigator.clipboard.writeText(shareLink);
-        setCopied(true);
-        toast.success('Link copied! 📋');
-        setTimeout(() => setCopied(false), 2000);
+        navigator.clipboard.writeText(shareLink).then(() => {
+            setCopied(true);
+            toast.success('Link copied! 📋');
+            setTimeout(() => setCopied(false), 2000);
+        }).catch(() => {
+            // Fallback for mobile if clipboard fails
+            const textArea = document.createElement('textarea');
+            textArea.value = shareLink;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setCopied(true);
+            toast.success('Link copied! 📋');
+            setTimeout(() => setCopied(false), 2000);
+        });
     };
 
     const handleRemoveCollaborator = async (collaboratorId) => {
@@ -176,7 +202,8 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                             <>
                                 {/* Share Buttons */}
                                 <div className='grid grid-cols-2 gap-3 mb-4'>
-                                    {/* Native Share - Works great on mobile! */}
+
+                                    {/* Native Share - WhatsApp etc */}
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
@@ -184,7 +211,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                         className='flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-medium text-sm'
                                     >
                                         <FaShareAlt />
-                                        Share Link
+                                        Share
                                     </motion.button>
 
                                     {/* Copy Link */}
@@ -192,7 +219,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleCopyLink}
-                                        className={`flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm ${
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-colors ${
                                             copied
                                                 ? 'bg-green-500 text-white'
                                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -204,19 +231,19 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                         }
                                     </motion.button>
 
-                                    {/* QR Code Button */}
+                                    {/* QR Code */}
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => setShowQR(!showQR)}
-                                        className='flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-medium text-sm col-span-2'
+                                        className='col-span-2 flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-medium text-sm'
                                     >
                                         <FaQrcode />
                                         {showQR ? 'Hide QR Code' : 'Show QR Code'}
                                     </motion.button>
                                 </div>
 
-                                {/* QR Code */}
+                                {/* QR Code Display */}
                                 <AnimatePresence>
                                     {showQR && (
                                         <motion.div
@@ -233,7 +260,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                                 level="H"
                                             />
                                             <p className='text-xs text-gray-500 mt-3 text-center'>
-                                                📷 User B scans this QR code to join!
+                                                📷 Scan this QR code to join the note!
                                             </p>
                                         </motion.div>
                                     )}
@@ -249,7 +276,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                     </p>
                                 </div>
 
-                                {/* Collaborators */}
+                                {/* Collaborators List */}
                                 <div className='mb-4'>
                                     <div className='flex items-center gap-2 mb-3'>
                                         <FaUsers className='text-teal-500' />
@@ -284,7 +311,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                         </div>
                                     ) : (
                                         <p className='text-sm text-gray-400 dark:text-gray-500 text-center py-3 bg-gray-50 dark:bg-gray-700 rounded-lg'>
-                                            No one has joined yet. Share the link! 👆
+                                            No one joined yet. Share the link! 👆
                                         </p>
                                     )}
                                 </div>
@@ -295,7 +322,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                     disabled={loading}
                                     className='w-full bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-lg font-medium text-sm disabled:opacity-50'
                                 >
-                                    🚫 Disable Sharing & Remove All
+                                    🚫 Disable Sharing
                                 </button>
                             </>
                         )}

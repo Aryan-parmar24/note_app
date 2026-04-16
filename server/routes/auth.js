@@ -157,7 +157,7 @@ router.post('/forgot-password', async (req, res) => {
         console.log("Sending OTP email via Brevo...");
 
         const mailOptions = {
-            from: `NoteApp <${process.env.EMAIL_USER}>`,
+            from: `NoteApp <${process.env.SENDER_EMAIL}>`,
             to: email,
             subject: 'Note App - Password Reset OTP',
             html: `

@@ -37,7 +37,7 @@ jobs:
     - name: Install Capacitor
       run: |
         cd frontend
-        npm install @capacitor/core @capacitor/cli @capacitor/android
+        npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/share
     
     - name: Build web app
       run: |
