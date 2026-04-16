@@ -4,6 +4,7 @@ import { FaTimes, FaCopy, FaCheck, FaUsers,
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import axios from 'axios';
+import { Share } from '@capacitor/share';
 import { API_URL } from '../config';
 import toast from 'react-hot-toast';
 
@@ -74,7 +75,7 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
     const handleNativeShare = async () => {
         try {
             // Try Capacitor Share Plugin first (for APK)
-            const { Share } = await import('@capacitor/share');
+            // const { Share } = await import('@capacitor/share');
             await Share.share({
                 title: `Join my note: ${note.title}`,
                 text: `Hey! I'm sharing a note with you on NoteApp. Click the link to join and collaborate!`,
