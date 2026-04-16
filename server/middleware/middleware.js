@@ -44,7 +44,8 @@ const middleware = async (req, res, next) => {
             });
         }
 
-        const newUser = { name: user.name, id: user._id };
+        // const newUser = { name: user.name, id: user._id };
+        const newUser = { name: user.name, id: user._id.toString() }
         req.user = newUser;
         next();
 
