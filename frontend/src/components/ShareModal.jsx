@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { FaTimes, FaCopy, FaCheck, FaUsers,
-         FaTrash, FaLink, FaQrcode, FaShareAlt } from 'react-icons/fa';
+import {
+    FaTimes, FaCopy, FaCheck, FaUsers,
+    FaTrash, FaLink, FaQrcode, FaShareAlt
+} from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import axios from 'axios';
@@ -71,37 +73,25 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
         }
     };
 
-    // ✅ Works on BOTH mobile APK and web browser!
     const handleNativeShare = async () => {
-        try {
-            // Try Capacitor Share Plugin first (for APK)
-            // const { Share } = await import('@capacitor/share');
-            await Share.share({
-                title: `Join my note: ${note.title}`,
-                text: `Hey! I'm sharing a note with you on NoteApp. Click the link to join and collaborate!`,
-                url: shareLink,
-                dialogTitle: 'Share Note via'
-            });
-            toast.success('Shared! 🎉');
-        } catch (capacitorError) {
-            // Fallback: Web Share API (for browser)
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: `Join my note: ${note.title}`,
-                        text: `Hey! I'm sharing a note with you on NoteApp!`,
-                        url: shareLink
-                    });
-                } catch (error) {
-                    if (error.name !== 'AbortError') {
-                        // Final fallback: Copy link
-                        handleCopyLink();
-                    }
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `Join my note: ${note.title}`,
+                    text: `Hey! I'm sharing a note with you on NoteApp. Click the link to join and collaborate! 🤝`,
+                    url: shareLink
+                });
+                toast.success('Shared! 🎉');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    handleCopyLink();
                 }
-            } else {
-                // Browser doesn't support share → just copy
-                handleCopyLink();
             }
+        } else {
+            handleCopyLink();
+            toast.success('Link copied! Paste it in WhatsApp or Telegram 📱', {
+                duration: 4000
+            });
         }
     };
 
@@ -220,11 +210,10 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleCopyLink}
-                                        className={`flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-colors ${
-                                            copied
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-colors ${copied
                                                 ? 'bg-green-500 text-white'
                                                 : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                                        }`}
+                                            }`}
                                     >
                                         {copied
                                             ? <><FaCheck /> Copied!</>
