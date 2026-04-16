@@ -89,9 +89,6 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
             }
         } else {
             handleCopyLink();
-            toast.success('Link copied! Paste it in WhatsApp or Telegram 📱', {
-                duration: 4000
-            });
         }
     };
 
@@ -194,25 +191,14 @@ const ShareModal = ({ note, closeShare, onUpdate }) => {
                                 {/* Share Buttons */}
                                 <div className='grid grid-cols-2 gap-3 mb-4'>
 
-                                    {/* Native Share - WhatsApp etc */}
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={handleNativeShare}
-                                        className='flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white py-3 rounded-lg font-medium text-sm'
-                                    >
-                                        <FaShareAlt />
-                                        Share
-                                    </motion.button>
-
                                     {/* Copy Link */}
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleCopyLink}
-                                        className={`flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-colors ${copied
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                                        className={`col-span-2 flex items-center justify-center gap-2 py-3 rounded-lg font-medium text-sm transition-colors ${copied
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                                             }`}
                                     >
                                         {copied
